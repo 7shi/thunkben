@@ -11,6 +11,7 @@ struct TestFunc : public Xbyak::CodeGenerator {
 
 int main() {
     TestFunc testf;
+    testf.dump();
     auto test = reinterpret_cast<int(*)(int, int)>(
         const_cast<Xbyak::uint8 *>(testf.getCode()));
     printf("test(2, 3): %d\n", test(2, 3));
