@@ -1,5 +1,7 @@
 #include <stdio.h>
 
-void test(int a, int b) {
-    printf("%d, %d\n", a, b);
+int test(int a, int b) {
+    int c = a + b;
+    printf("%d + %d = %d\n", a, b, c);
+    return c;
 }
