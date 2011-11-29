@@ -27,6 +27,7 @@ class Window {
 protected:
     StdCallThunk<Window, HWND, UINT, WPARAM, LPARAM, LRESULT> wndProc;
 public:
+    HWND hWnd;
     ATOM MyRegisterClass(HINSTANCE hInstance);
     BOOL InitInstance(HINSTANCE hInstance, int nCmdShow);
     LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -121,8 +122,6 @@ ATOM Window::MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL Window::InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   HWND hWnd;
-
    hInst = hInstance; // グローバル変数にインスタンス処理を格納します。
 
    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
