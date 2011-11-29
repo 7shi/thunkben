@@ -6,7 +6,7 @@ EXTERN _printf:NEAR
 
 PUBLIC _entry
 _entry:
-	; printf("%d\n", test(2, 3))
+	; printf("%d\n", test(2, 3));
 
 	push 3
 	push 2
