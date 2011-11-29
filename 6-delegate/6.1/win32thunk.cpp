@@ -28,6 +28,7 @@ protected:
     StdCallThunk<Window, HWND, UINT, WPARAM, LPARAM, LRESULT> wndProc;
 public:
     HWND hWnd;
+    std::list<std::function<bool(int, int)>> Command;
     ATOM MyRegisterClass(HINSTANCE hInstance);
     BOOL InitInstance(HINSTANCE hInstance, int nCmdShow);
     LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -50,6 +51,19 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LoadString(hInstance, IDC_WIN32THUNK, szWindowClass, MAX_LOADSTRING);
 	Window win;
 	win.MyRegisterClass(hInstance);
+    win.Command.push_back([&](int id, int e)->bool {
+        // 選択されたメニューの解析:
+        switch (id)
+        {
+        case IDM_ABOUT:
+            DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), win.hWnd, About);
+            return true;
+        case IDM_EXIT:
+            DestroyWindow(win.hWnd);
+            return true;
+        }
+        return false;
+    });
 
 	// アプリケーションの初期化を実行します:
 	if (!win.InitInstance (hInstance, nCmdShow))
@@ -157,21 +171,10 @@ LRESULT Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_COMMAND:
-		wmId    = LOWORD(wParam);
-		wmEvent = HIWORD(wParam);
-		// 選択されたメニューの解析:
-		switch (wmId)
-		{
-		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
-		break;
+        for each (auto f in Command)
+            if (f(LOWORD(wParam), HIWORD(wParam)))
+                return 0;
+        return DefWindowProc(hWnd, message, wParam, lParam);
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		// TODO: 描画コードをここに追加してください...

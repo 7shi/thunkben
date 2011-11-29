@@ -19,3 +19,6 @@
 
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください。
+#include <list>
+#include <functional>
+#include "xbyak/xbyak.h"
