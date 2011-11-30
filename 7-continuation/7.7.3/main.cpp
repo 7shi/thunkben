@@ -3,15 +3,13 @@
 
 using namespace std;
 
-void test() {
-    int n = 0;
-    for (;;) n = yield(++n);
-}
-
 int main() {
-    Coroutine<int> cr = test;
+    int n = 0;
+    Coroutine<int> cr = [&] {
+        for (;;) yield(++n);
+    };
     if (cr()) cout << cr.value << endl;
     if (cr()) cout << cr.value << endl;
-    cr.value = 5;
+    n = 5;
     if (cr()) cout << cr.value << endl;
 }
