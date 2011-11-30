@@ -11,6 +11,34 @@ static tstring LoadTString(HINSTANCE hInstance, UINT uID) {
     return buf;
 }
 
+class DragHandler {
+    Coroutine<bool> cr;
+    std::function<void()> handler;
+
+public:
+    int x, y;
+
+    DragHandler(Window *win) {
+        win->MouseMove.push_back([&](int x, int y, WPARAM) {
+            if (cr.value) { this->x = x; this->y = y; cr(); }
+        });
+        win->MouseUp.push_back([&](int button, int x, int y, WPARAM) {
+            if (cr.value) { cr.value = false; cr(); }
+        });
+    }
+
+    void operator=(const decltype(handler) &h) {
+        cr = handler = h;
+        cr.value = false;
+    }
+
+    void start(int x, int y) {
+        this->x = x;
+        this->y = y;
+        if (!cr.value) { cr.reset(); cr(); }
+    }
+};
+
 // このコード モジュールに含まれる関数の宣言を転送します:
 INT_PTR CALLBACK        About(HWND, UINT, WPARAM, LPARAM);
 
