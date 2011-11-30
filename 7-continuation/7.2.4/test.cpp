@@ -51,24 +51,21 @@ void save_stack(std::vector<char> *dest, unsigned long last, myjmp_buf *callee) 
 
 myjmp_buf jb1, jb2;
 std::vector<char> stack;
-int *p;
 
 void test() {
     for (int i = 1; i <= 10; i++)
         if (mysetjmp(&jb2) == 0) {
             save_stack(&stack, jb1.esp, &jb2);
-            for (p = (int*)jb2.esp; p < (int*)jb1.esp; p++)
-                printf("%p: %p\n", p, *p);
             mylongjmp(&jb1, i);
         }
-    mylongjmp(&jb1, -1);
 }
 
 int main() {
     int value = mysetjmp(&jb1);
-    if (value == 0)
+    if (value == 0) {
         test();
-    else if (value > 0) {
+        printf("end\n");
+    } else if (value > 0) {
         printf("%d\n", value);
         mylongjmp(&jb2, 1);
     }
