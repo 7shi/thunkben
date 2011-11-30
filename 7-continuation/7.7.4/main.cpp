@@ -4,12 +4,16 @@
 using namespace std;
 
 int main() {
-    int n = 0;
-    Coroutine<int> cr = [&] {
-        for (;;) yield(++n);
-    };
+    struct Test {
+        int n;
+        void test() {
+            for (;;) yield(++n);
+        }
+    } test;
+    Coroutine<int> cr = std::bind(&Test::test, &test);
+    test.n = 0;
     if (cr()) cout << cr.value << endl;
     if (cr()) cout << cr.value << endl;
-    n = 5;
+    test.n = 5;
     if (cr()) cout << cr.value << endl;
 }
