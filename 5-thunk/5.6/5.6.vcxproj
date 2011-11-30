@@ -14,7 +14,6 @@
     <ProjectGuid>{1FBBA546-9061-4FA2-BFF6-E7030CCF3227}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>win32thunk</RootNamespace>
-    <ProjectName>5.6</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
