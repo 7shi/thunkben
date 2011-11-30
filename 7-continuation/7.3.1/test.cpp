@@ -1,6 +1,7 @@
 #include <string.h>
-#include <vector>
 #include <functional>
+#include <vector>
+#include <stack>
 
 typedef struct {
     unsigned long eip, esp, ebp, ebx, edi, esi;
@@ -49,7 +50,14 @@ void save_stack(std::vector<char> *dest, unsigned long last, myjmp_buf *callee) 
     memcpy(callee->stack, (void *)callee->esp, callee->length);
 }
 
-template <class T> class Coroutine {
+class CoroutineBase {
+public:
+    virtual ~CoroutineBase() {}
+};
+
+static std::stack<CoroutineBase *> coroutines;
+
+template <class T> class Coroutine : public CoroutineBase {
     myjmp_buf caller, callee;
     std::vector<char> stack;
     std::function<void()> f;
@@ -66,38 +74,47 @@ public:
         switch (status) {
         case 0:
             status = 1;
+            coroutines.push(this);
             f();
+            coroutines.pop();
             status = 3;
             break;
         case 2:
             status = 1;
+            coroutines.push(this);
             mylongjmp(&callee, 1);
         }
         return false;
     }
 
     T yield(T value) {
-        this->value = value;
-        if (mysetjmp(&callee) == 0) {
+        if (coroutines.top() == this) {
+            coroutines.pop();
             status = 2;
-            save_stack(&stack, caller.esp, &callee);
-            mylongjmp(&caller, 1);
+            this->value = value;
+            if (mysetjmp(&callee) == 0) {
+                save_stack(&stack, caller.esp, &callee);
+                mylongjmp(&caller, 1);
+            }
         }
         return this->value;
     }
 };
 
-#include <stdio.h>
+template <class T> T yield(T value) {
+    auto cr = dynamic_cast<Coroutine<T> *>(coroutines.top());
+    return cr ? cr->yield(value) : T();
+}
 
-Coroutine<int> cr;
+#include <stdio.h>
 
 void test() {
     for (int i = 0; i <= 5; i++)
-        cr.yield(i);
+        yield(i);
 }
 
 int main() {
-    cr = test;
+    Coroutine<int> cr = test;
     while (cr())
         printf("%d\n", cr.value);
     printf("end\n");
