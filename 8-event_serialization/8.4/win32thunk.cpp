@@ -39,6 +39,16 @@ public:
     }
 };
 
+struct Rect {
+  int x, y, w, h;
+  inline int r() { return x + w; }
+  inline int b() { return y + h; }
+  Rect(int x, int y, int w, int h): x(x), y(y), w(w), h(h){}
+  bool contains(int px, int py) {
+    return x <= px && px < r() && y <= py && py < b();
+  }
+};
+
 // このコード モジュールに含まれる関数の宣言を転送します:
 INT_PTR CALLBACK        About(HWND, UINT, WPARAM, LPARAM);
 
