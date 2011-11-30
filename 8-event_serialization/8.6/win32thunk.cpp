@@ -106,6 +106,9 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                 return;
             }
         }
+        rects.push_back(Rect(x, y, 2, 2));
+        sel = rects.rbegin();
+        dh2.start(x, y);
     });
     dh = [&] {
         int x = dh.x, y = dh.y, rx = sel->x, ry = sel->y;
