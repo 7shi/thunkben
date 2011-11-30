@@ -40,13 +40,13 @@ public:
 };
 
 struct Rect {
-  int x, y, w, h;
-  inline int r() { return x + w; }
-  inline int b() { return y + h; }
-  Rect(int x, int y, int w, int h): x(x), y(y), w(w), h(h){}
-  bool contains(int px, int py) {
-    return x <= px && px < r() && y <= py && py < b();
-  }
+    int x, y, w, h;
+    inline int r() { return x + w; }
+    inline int b() { return y + h; }
+    Rect(int x, int y, int w, int h): x(x), y(y), w(w), h(h) {}
+    bool contains(int px, int py) {
+        return x <= px && px < r() && y <= py && py < b();
+    }
 };
 
 // このコード モジュールに含まれる関数の宣言を転送します:
@@ -80,28 +80,38 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         return false;
     });
 
-    POINT pb = { 10, 10 };
+    std::vector<Rect> rects;
+    rects.push_back(Rect(10, 10, 40, 40));
+    rects.push_back(Rect(60, 60, 40, 40));
+
     win.Paint.push_back([&](HDC hdc) {
         auto oldPen = (HPEN)SelectObject(hdc, GetStockObject(BLACK_PEN));
         auto oldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(GRAY_BRUSH));
-        Rectangle(hdc, pb.x, pb.y, pb.x + 40, pb.y + 40);
+        for (auto it = rects.begin(); it != rects.end(); it++)
+            Rectangle(hdc, it->x, it->y, it->r(), it->b());
         SelectObject(hdc, oldPen);
         SelectObject(hdc, oldBrush);
     });
 
     DragHandler dh(&win);
+    decltype(rects.rbegin()) sel;
     win.MouseDown.push_back([&](int btn, int x, int y, WPARAM) {
-        if (pb.x <= x && x <= pb.x + 40 && pb.y <= y && y <= pb.y + 40)
-            dh.start(x, y);
+        for (auto it = rects.rbegin(); it != rects.rend(); it++) {
+            if (it->contains(x, y)) {
+                sel = it;
+                dh.start(x, y);
+                return;
+            }
+        }
     });
     dh = [&] {
-        int x = dh.x, y = dh.y, px = pb.x, py = pb.y;
+        int x = dh.x, y = dh.y, rx = sel->x, ry = sel->y;
         while (yield(true)) {
-            int oldx = pb.x, oldy = pb.y;
-            pb.x = px + (dh.x - x);
-            pb.y = py + (dh.y - y);
-            RECT r = { min(oldx, pb.x), min(oldy, pb.y),
-                max(oldx, pb.x) + 40, max(oldy, pb.y) + 40 };
+            auto old = *sel;
+            sel->x = rx + (dh.x - x);
+            sel->y = ry + (dh.y - y);
+            RECT r = { min(old.x, sel->x), min(old.y, sel->y),
+                max(old.r(), sel->r()), max(old.b(), sel->b()) };
             InvalidateRect(win.hWnd, &r, true);
         }
     };
