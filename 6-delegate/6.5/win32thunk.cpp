@@ -41,13 +41,37 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         }
         return false;
     });
+
+    POINT pb = { 10, 10 };
     win.Paint.push_back([&](HDC hdc) {
         auto oldPen = (HPEN)SelectObject(hdc, GetStockObject(BLACK_PEN));
         auto oldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(GRAY_BRUSH));
-        Rectangle(hdc, 10, 10, 40, 40);
+        Rectangle(hdc, pb.x, pb.y, pb.x + 40, pb.y + 40);
         SelectObject(hdc, oldPen);
         SelectObject(hdc, oldBrush);
     });
+
+    bool sel = false;
+    POINT pd, pb2;
+    win.MouseDown.push_back([&](int btn, int x, int y, WPARAM) {
+        if (pb.x <= x && x <= pb.x + 40 && pb.y <= y && y <= pb.y + 40) {
+            pd.x = x;
+            pd.y = y;
+            pb2 = pb;
+            sel = true;
+        }
+    });
+    win.MouseMove.push_back([&](int x, int y, WPARAM) {
+        if (sel) {
+            int oldx = pb.x, oldy = pb.y;
+            pb.x = pb2.x + (x - pd.x);
+            pb.y = pb2.y + (y - pd.y);
+            RECT r = { min(oldx, pb.x), min(oldy, pb.y),
+                max(oldx, pb.x) + 40, max(oldy, pb.y) + 40 };
+            InvalidateRect(win.hWnd, &r, true);
+        }
+    });
+    win.MouseUp.push_back([&](int, int, int, WPARAM) { sel = false; });
 
     // アプリケーションの初期化を実行します:
     if (!win.InitInstance(LoadTString(hInstance, IDS_APP_TITLE), nCmdShow))
