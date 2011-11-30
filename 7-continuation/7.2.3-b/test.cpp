@@ -51,10 +51,10 @@ void save_stack(std::vector<char> *dest, unsigned long last, myjmp_buf *callee) 
 
 myjmp_buf jb1, jb2;
 std::vector<char> stack;
-int i, *p;
+int *p;
 
 void test() {
-    for (i = 1; i <= 10; i++)
+    for (int i = 1; i <= 10; i++)
         if (mysetjmp(&jb2) == 0) {
             save_stack(&stack, jb1.esp, &jb2);
             for (p = (int*)jb2.esp; p < (int*)jb1.esp; p++)
