@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+#include <vector>
 
 typedef struct {
     unsigned long eip, esp, ebp, ebx, edi, esi;
@@ -38,6 +40,13 @@ _declspec(naked) void _fastcall mylongjmp(myjmp_buf *jbuf, int value) {
         mov esi, [edx+20]
         jmp dword ptr [edx]
     }
+}
+
+void save_stack(std::vector<char> *dest, unsigned long last, myjmp_buf *callee) {
+    callee->length = last - callee->esp;
+    dest->resize(callee->length);
+    callee->stack = &(*dest)[0];
+    memcpy(callee->stack, (void *)callee->esp, callee->length);
 }
 
 myjmp_buf jb1, jb2;
