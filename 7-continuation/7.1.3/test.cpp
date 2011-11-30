@@ -2,9 +2,9 @@
 #include <setjmp.h>
 
 jmp_buf jb1, jb2;
-int i;
 
 void test() {
+    int i;
     for (i = 1; i <= 10; i++)
         if (setjmp(jb2) == 0)
             longjmp(jb1, i);
