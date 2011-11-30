@@ -64,6 +64,11 @@ template <class T> class Coroutine : public CoroutineBase {
     int status;
     unsigned long last;
 
+    void exec() {
+        f();
+        mylongjmp(&caller, 2);
+    }
+
 public:
     T value;
     Coroutine() : status(0) {}
@@ -72,16 +77,20 @@ public:
 
     bool operator()() {
         if (status == 0) _alloca(32 * 1024);
-        if (mysetjmp(&caller)) return true;
+        switch (mysetjmp(&caller)) {
+        case 1:
+            return true;
+        case 2:
+            coroutines.pop();
+            status = 3;
+            return false;
+        }
         switch (status) {
         case 0:
             last = caller.esp;
             status = 1;
             coroutines.push(this);
-            f();
-            coroutines.pop();
-            status = 3;
-            break;
+            exec();
         case 2:
             if (caller.esp < callee.esp)
                 return false;
