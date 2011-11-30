@@ -98,7 +98,7 @@ public:
             status = 2;
             this->value = value;
             if (mysetjmp(&callee) == 0) {
-                save_stack(&stack, caller.esp, &callee);
+                save_stack(&stack, last, &callee);
                 mylongjmp(&caller, 1);
             }
         }
