@@ -79,42 +79,22 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         SelectObject(hdc, oldBrush);
     });
 
-    int mx, my;
-    Coroutine<bool> cr = [&] {
-        for (;;) {
-            yield(false);
-            int x = mx, y = my, px = pb.x, py = pb.y;
-            while (yield(true)) {
-                int oldx = pb.x, oldy = pb.y;
-                pb.x = px + (mx - x);
-                pb.y = py + (my - y);
-                RECT r = { min(oldx, pb.x), min(oldy, pb.y),
-                    max(oldx, pb.x) + 40, max(oldy, pb.y) + 40 };
-                InvalidateRect(win.hWnd, &r, true);
-            }
+    DragHandler dh(&win);
+    win.MouseDown.push_back([&](int btn, int x, int y, WPARAM) {
+        if (pb.x <= x && x <= pb.x + 40 && pb.y <= y && y <= pb.y + 40)
+            dh.start(x, y);
+    });
+    dh = [&] {
+        int x = dh.x, y = dh.y, px = pb.x, py = pb.y;
+        while (yield(true)) {
+            int oldx = pb.x, oldy = pb.y;
+            pb.x = px + (dh.x - x);
+            pb.y = py + (dh.y - y);
+            RECT r = { min(oldx, pb.x), min(oldy, pb.y),
+                max(oldx, pb.x) + 40, max(oldy, pb.y) + 40 };
+            InvalidateRect(win.hWnd, &r, true);
         }
     };
-    cr();
-    win.MouseDown.push_back([&](int btn, int x, int y, WPARAM) {
-        if (pb.x <= x && x <= pb.x + 40 && pb.y <= y && y <= pb.y + 40) {
-            mx = x;
-            my = y;
-            if (!cr.value) cr();
-        }
-    });
-    win.MouseMove.push_back([&](int x, int y, WPARAM) {
-        if (cr.value) {
-            mx = x;
-            my = y;
-            cr();
-        }
-    });
-    win.MouseUp.push_back([&](int btn, int x, int y, WPARAM) {
-        if (cr.value) {
-            cr.value = false;
-            cr();
-        }
-    });
 
     // アプリケーションの初期化を実行します:
     if (!win.InitInstance(LoadTString(hInstance, IDS_APP_TITLE), nCmdShow))
