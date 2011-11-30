@@ -23,3 +23,4 @@
 #include <list>
 #include <functional>
 #include "xbyak/xbyak.h"
+#include "Window.h"
