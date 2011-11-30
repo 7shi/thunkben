@@ -38,6 +38,7 @@ public:
     Coroutine() : status(0) {}
     Coroutine(const decltype(f) &f) : f(f), status(0) {}
     void operator=(const decltype(f) &f) { this->f = f; }
+    void reset() { if (status == 3) status = 0; }
 
     bool operator()() {
         if (status == 0) _alloca(32 * 1024);
