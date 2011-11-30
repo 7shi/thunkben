@@ -3,17 +3,16 @@
 
 #include "stdafx.h"
 #include "win32thunk.h"
-#include "xbyak/xbyak.h"
 
 #define MAX_LOADSTRING 100
 
 // グローバル変数:
-HINSTANCE hInst;								// 現在のインターフェイス
-TCHAR szTitle[MAX_LOADSTRING];					// タイトル バーのテキスト
-TCHAR szWindowClass[MAX_LOADSTRING];			// メイン ウィンドウ クラス名
+HINSTANCE hInst;                        // 現在のインターフェイス
+TCHAR szTitle[MAX_LOADSTRING];          // タイトル バーのテキスト
+TCHAR szWindowClass[MAX_LOADSTRING];    // メイン ウィンドウ クラス名
 
 // このコード モジュールに含まれる関数の宣言を転送します:
-INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK        About(HWND, UINT, WPARAM, LPARAM);
 
 template <class T, class TA1, class TA2, class TA3, class TA4, class TR>
 struct StdCallThunk : public Xbyak::CodeGenerator {
@@ -36,32 +35,33 @@ protected:
     }
 public:
     HWND hWnd;
+    ATOM MyRegisterClass(HINSTANCE hInstance);
+    BOOL InitInstance(HINSTANCE hInstance, int nCmdShow);
+    LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
     std::list<std::function<bool(int, int)>> Command;
     std::list<std::function<void(HDC)>> Paint;
     std::list<std::function<void(int, int, int, WPARAM)>> MouseDown, MouseUp;
     std::list<std::function<void(int, int, WPARAM)>> MouseMove;
-    ATOM MyRegisterClass(HINSTANCE hInstance);
-    BOOL InitInstance(HINSTANCE hInstance, int nCmdShow);
-    LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPTSTR    lpCmdLine,
-                     int       nCmdShow)
+    HINSTANCE hPrevInstance,
+    LPTSTR    lpCmdLine,
+    int       nCmdShow)
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
 
- 	// TODO: ここにコードを挿入してください。
-	MSG msg;
-	HACCEL hAccelTable;
+    // TODO: ここにコードを挿入してください。
+    MSG msg;
+    HACCEL hAccelTable;
 
-	// グローバル文字列を初期化しています。
-	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadString(hInstance, IDC_WIN32THUNK, szWindowClass, MAX_LOADSTRING);
-	Window win;
-	win.MyRegisterClass(hInstance);
+    // グローバル文字列を初期化しています。
+    LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    LoadString(hInstance, IDC_WIN32THUNK, szWindowClass, MAX_LOADSTRING);
+    Window win;
+    win.MyRegisterClass(hInstance);
     win.Command.push_back([&](int id, int e)->bool {
         // 選択されたメニューの解析:
         switch (id)
@@ -83,25 +83,25 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         SelectObject(hdc, oldBrush);
     });
 
-	// アプリケーションの初期化を実行します:
-	if (!win.InitInstance (hInstance, nCmdShow))
-	{
-		return FALSE;
-	}
+    // アプリケーションの初期化を実行します:
+    if (!win.InitInstance (hInstance, nCmdShow))
+    {
+        return FALSE;
+    }
 
-	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN32THUNK));
+    hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN32THUNK));
 
-	// メイン メッセージ ループ:
-	while (GetMessage(&msg, NULL, 0, 0))
-	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
+    // メイン メッセージ ループ:
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
 
-	return (int) msg.wParam;
+    return (int) msg.wParam;
 }
 
 
@@ -121,25 +121,25 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 //
 ATOM Window::MyRegisterClass(HINSTANCE hInstance)
 {
-	wndProc.init(this, &Window::WndProc);
+    wndProc.init(this, &Window::WndProc);
 
-	WNDCLASSEX wcex;
+    WNDCLASSEX wcex;
 
-	wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.cbSize = sizeof(WNDCLASSEX);
 
-	wcex.style			= CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc	= (WNDPROC)wndProc.getCode();
-	wcex.cbClsExtra		= 0;
-	wcex.cbWndExtra		= 0;
-	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WIN32THUNK));
-	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_WIN32THUNK);
-	wcex.lpszClassName	= szWindowClass;
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = (WNDPROC)wndProc.getCode();
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = hInstance;
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WIN32THUNK));
+    wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
+    wcex.lpszMenuName   = MAKEINTRESOURCE(IDC_WIN32THUNK);
+    wcex.lpszClassName  = szWindowClass;
+    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-	return RegisterClassEx(&wcex);
+    return RegisterClassEx(&wcex);
 }
 
 //
@@ -154,20 +154,20 @@ ATOM Window::MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL Window::InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   hInst = hInstance; // グローバル変数にインスタンス処理を格納します。
+    hInst = hInstance; // グローバル変数にインスタンス処理を格納します。
 
-   hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
+    if (!hWnd)
+    {
+        return FALSE;
+    }
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
 
-   return TRUE;
+    return TRUE;
 }
 
 //
@@ -175,24 +175,24 @@ BOOL Window::InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 //  目的:  メイン ウィンドウのメッセージを処理します。
 //
-//  WM_COMMAND	- アプリケーション メニューの処理
-//  WM_PAINT	- メイン ウィンドウの描画
-//  WM_DESTROY	- 中止メッセージを表示して戻る
+//  WM_COMMAND  - アプリケーション メニューの処理
+//  WM_PAINT    - メイン ウィンドウの描画
+//  WM_DESTROY  - 中止メッセージを表示して戻る
 //
 //
 LRESULT Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	PAINTSTRUCT ps;
-	HDC hdc;
+    PAINTSTRUCT ps;
+    HDC hdc;
 
-	switch (message)
-	{
-	case WM_COMMAND:
+    switch (message)
+    {
+    case WM_COMMAND:
         for each (auto f in Command)
             if (f(LOWORD(wParam), HIWORD(wParam)))
                 return 0;
         return DefWindowProc(hWnd, message, wParam, lParam);
-	case WM_PAINT:
+    case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
         // TODO: 描画コードをここに追加してください...
         for each (auto f in Paint) f(hdc);
@@ -210,31 +210,32 @@ LRESULT Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         for each (auto f in MouseMove)
             f(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam);
         break;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-	return 0;
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
 }
 
 // バージョン情報ボックスのメッセージ ハンドラーです。
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	UNREFERENCED_PARAMETER(lParam);
-	switch (message)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
+    UNREFERENCED_PARAMETER(lParam);
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        return (INT_PTR)TRUE;
 
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hDlg, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
-	}
-	return (INT_PTR)FALSE;
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        }
+        break;
+    }
+    return (INT_PTR)FALSE;
 }
+
