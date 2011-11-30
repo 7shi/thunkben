@@ -30,14 +30,25 @@ _declspec(naked) void _fastcall mylongjmp(myjmp_buf *jbuf, int value) {
     }
 }
 
-myjmp_buf jb;
+myjmp_buf jb1, jb2;
+int i, *p;
+
+void test() {
+    for (i = 1; i <= 10; i++)
+        if (mysetjmp(&jb2) == 0) {
+            for (p = (int *)jb2.esp; p < (int *)jb1.esp; p++)
+                printf("%p: %p\n", p, *p);
+            mylongjmp(&jb1, i);
+        }
+    mylongjmp(&jb1, -1);
+}
 
 int main() {
-    if (mysetjmp(&jb) == 0) {
-        printf("setjmp\n");
-        printf("test\n");
-        mylongjmp(&jb, 1);
-        printf("never reach here\n");
+    int value = mysetjmp(&jb1);
+    if (value == 0)
+        test();
+    else if (value > 0) {
+        printf("%d\n", value);
+        mylongjmp(&jb2, 1);
     }
-    printf("longjmp done.\n");
 }
