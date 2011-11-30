@@ -83,6 +83,8 @@ public:
             status = 3;
             break;
         case 2:
+            if (caller.esp < callee.esp)
+                return false;
             status = 1;
             coroutines.push(this);
             mylongjmp(&callee, 1);
