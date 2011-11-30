@@ -62,6 +62,7 @@ template <class T> class Coroutine : public CoroutineBase {
     std::vector<char> stack;
     std::function<void()> f;
     int status;
+    unsigned long last;
 
 public:
     T value;
@@ -70,9 +71,11 @@ public:
     void operator=(const decltype(f) &f) { this->f = f; }
 
     bool operator()() {
+        if (status == 0) _alloca(32 * 1024);
         if (mysetjmp(&caller)) return true;
         switch (status) {
         case 0:
+            last = caller.esp;
             status = 1;
             coroutines.push(this);
             f();
