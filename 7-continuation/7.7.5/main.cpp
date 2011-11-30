@@ -6,14 +6,16 @@ using namespace std;
 int main() {
     struct Test {
         int n;
-        void test() {
+        Test() : n(0) {}
+        void operator()() {
             for (;;) yield(++n);
         }
     } test;
-    Coroutine<int> cr = std::bind(&Test::test, &test);
-    test.n = 0;
-    if (cr()) cout << cr.value << endl;
-    if (cr()) cout << cr.value << endl;
-    test.n = 5;
-    if (cr()) cout << cr.value << endl;
+    Coroutine<int> cr1 = test;
+    if (cr1()) cout << "cr1: " << cr1.value << endl;
+    if (cr1()) cout << "cr1: " << cr1.value << endl;
+    Coroutine<int> cr2 = test;
+    if (cr2()) cout << "cr2: " << cr2.value << endl;
+    if (cr2()) cout << "cr2: " << cr2.value << endl;
+    cout << "test.n: " << test.n << endl;
 }
