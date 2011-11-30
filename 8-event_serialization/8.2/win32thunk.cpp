@@ -51,27 +51,42 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         SelectObject(hdc, oldBrush);
     });
 
-    bool sel = false;
-    POINT pd, pb2;
+    int mx, my;
+    Coroutine<bool> cr = [&] {
+        for (;;) {
+            yield(false);
+            int x = mx, y = my, px = pb.x, py = pb.y;
+            while (yield(true)) {
+                int oldx = pb.x, oldy = pb.y;
+                pb.x = px + (mx - x);
+                pb.y = py + (my - y);
+                RECT r = { min(oldx, pb.x), min(oldy, pb.y),
+                    max(oldx, pb.x) + 40, max(oldy, pb.y) + 40 };
+                InvalidateRect(win.hWnd, &r, true);
+            }
+        }
+    };
+    cr();
     win.MouseDown.push_back([&](int btn, int x, int y, WPARAM) {
         if (pb.x <= x && x <= pb.x + 40 && pb.y <= y && y <= pb.y + 40) {
-            pd.x = x;
-            pd.y = y;
-            pb2 = pb;
-            sel = true;
+            mx = x;
+            my = y;
+            if (!cr.value) cr();
         }
     });
     win.MouseMove.push_back([&](int x, int y, WPARAM) {
-        if (sel) {
-            int oldx = pb.x, oldy = pb.y;
-            pb.x = pb2.x + (x - pd.x);
-            pb.y = pb2.y + (y - pd.y);
-            RECT r = { min(oldx, pb.x), min(oldy, pb.y),
-                max(oldx, pb.x) + 40, max(oldy, pb.y) + 40 };
-            InvalidateRect(win.hWnd, &r, true);
+        if (cr.value) {
+            mx = x;
+            my = y;
+            cr();
         }
     });
-    win.MouseUp.push_back([&](int, int, int, WPARAM) { sel = false; });
+    win.MouseUp.push_back([&](int btn, int x, int y, WPARAM) {
+        if (cr.value) {
+            cr.value = false;
+            cr();
+        }
+    });
 
     // アプリケーションの初期化を実行します:
     if (!win.InitInstance(LoadTString(hInstance, IDS_APP_TITLE), nCmdShow))
