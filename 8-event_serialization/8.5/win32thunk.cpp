@@ -93,13 +93,16 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         SelectObject(hdc, oldBrush);
     });
 
-    DragHandler dh(&win);
+    DragHandler dh(&win), dh2(&win);
     decltype(rects.rbegin()) sel;
     win.MouseDown.push_back([&](int btn, int x, int y, WPARAM) {
         for (auto it = rects.rbegin(); it != rects.rend(); it++) {
             if (it->contains(x, y)) {
                 sel = it;
-                dh.start(x, y);
+                if (it->r() - x <= 5 && it->b() - y <= 5)
+                    dh2.start(x, y);
+                else
+                    dh.start(x, y);
                 return;
             }
         }
@@ -111,6 +114,17 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
             sel->x = rx + (dh.x - x);
             sel->y = ry + (dh.y - y);
             RECT r = { min(old.x, sel->x), min(old.y, sel->y),
+                max(old.r(), sel->r()), max(old.b(), sel->b()) };
+            InvalidateRect(win.hWnd, &r, true);
+        }
+    };
+    dh2 = [&] {
+        int x = dh2.x, y = dh2.y, rw = sel->w, rh = sel->h;
+        while (yield(true)) {
+            auto old = *sel;
+            sel->w = max(rw + (dh2.x - x), 2);
+            sel->h = max(rh + (dh2.y - y), 2);
+            RECT r = { sel->x, sel->y,
                 max(old.r(), sel->r()), max(old.b(), sel->b()) };
             InvalidateRect(win.hWnd, &r, true);
         }
