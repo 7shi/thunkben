@@ -2,6 +2,8 @@
 
 typedef struct {
     unsigned long eip, esp, ebp, ebx, edi, esi;
+    void *stack;
+    int length;
 } myjmp_buf;
 
 _declspec(naked) int _fastcall mysetjmp(myjmp_buf *jbuf) {
@@ -14,6 +16,8 @@ _declspec(naked) int _fastcall mysetjmp(myjmp_buf *jbuf) {
         mov [ecx+16], edi
         mov [ecx+20], esi
         xor eax, eax
+        mov [ecx+24], eax
+        mov [ecx+28], eax
         jmp edx
     }
 }
@@ -21,12 +25,18 @@ _declspec(naked) int _fastcall mysetjmp(myjmp_buf *jbuf) {
 _declspec(naked) void _fastcall mylongjmp(myjmp_buf *jbuf, int value) {
     _asm {
         mov eax, edx
-        mov esp, [ecx+ 4]
-        mov ebp, [ecx+ 8]
-        mov ebx, [ecx+12]
-        mov edi, [ecx+16]
-        mov esi, [ecx+20]
-        jmp dword ptr [ecx]
+        mov edx, ecx
+        mov esp, [edx+ 4]
+        mov edi, esp
+        mov esi, [edx+24]
+        mov ecx, [edx+28]
+        cld
+        rep movsb
+        mov ebp, [edx+ 8]
+        mov ebx, [edx+12]
+        mov edi, [edx+16]
+        mov esi, [edx+20]
+        jmp dword ptr [edx]
     }
 }
 
