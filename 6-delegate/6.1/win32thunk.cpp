@@ -164,7 +164,6 @@ BOOL Window::InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
 
