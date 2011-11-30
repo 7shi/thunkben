@@ -114,7 +114,7 @@ template <class T> T yield(T value) {
 #include <stdio.h>
 
 void test() {
-    for (int i = 0; i <= 5; i++)
+    for (int i = 0; i <= 0; i++)
         yield(i);
     printf("test: done\n");
 }
